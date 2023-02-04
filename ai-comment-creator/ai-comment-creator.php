@@ -695,7 +695,6 @@ Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
 
  */
-require 'vendor/autoload.php';
 
 
 
@@ -867,28 +866,58 @@ add_filter('get_avatar', 'aicommentcreator_custom_avatar', 10, 5);
 
 
 function aicommentcreator_generate_comment_with_aicontentgenerator($domain_name,$prompt,$blog_post,$max_token){
+  $final_prompt = $prompt . ' " ' . $blog_post . ' " ';
 
+  $url = 'https://www.aicontentgenerator.app/api/generateCommentJS';
 
+  $data = array(
+      'userDomain' => $domain_name,
+      'maxToken' => $max_token,
+      'prompt' => $final_prompt
+  );
+
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+  curl_setopt($ch, CURLOPT_POST, 1);
+
+  $headers = array();
+  $headers[] = 'Content-Type: application/json';
+  curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+  $result = curl_exec($ch);
+  if (curl_errno($ch)) {
+      echo 'Error: ' . curl_error($ch);
+  }
+  curl_close($ch);
+
+  $responseData = json_decode($result, true);
+  $text = $responseData['choices'][0]['text'];
+  return "AICONTENTGENERATOR API   : " . $text;
+  
+
+/*
 $final_prompt = $prompt . ' :  " ' . $blog_post . ' " ';
 
 $final_prompt = aicommentcreator_parseHTML($final_prompt);
 
+$ch = curl_init();
 
-$client = new \GuzzleHttp\Client();
-try {
-    $response = $client->post('https://www.aicontentgenerator.app/api/generateCommentJS', [
-        'query' => [
-            'userDomain' => $domain_name,
-            'maxToken' => $max_token,
-            'prompt' => $final_prompt
-        ]
-    ]);
-    $result = json_decode($response->getBody(), true);
-    return "AICONTENTGENERATOR API : " . $result["choices"][0]["text"];
-    
-} catch (\GuzzleHttp\Exception\ClientException $e) {
-    return $e->getMessage();
+curl_setopt($ch, CURLOPT_URL, "https://www.aicontentgenerator.app/api/generateCommentJS");
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, "userDomain=$domain_name&maxToken=$max_token&prompt=$final_prompt");
+curl_setopt($ch, CURLOPT_POST, 1);
+
+$response = curl_exec($ch);
+if (curl_errno($ch)) {
+    return curl_error($ch);
 }
+curl_close ($ch);
+
+$result = json_decode($response, true);
+return "AICONTENTGENERATOR API : " .$response .$result["choices"][0]["text"]; */
+
 
 
   
@@ -1272,7 +1301,6 @@ function aicommentcreator_automaticComment(){ aicommentcreator_automaticComment_
       ) );
 
       foreach( $categories as $category ) {
-          // BURAYA DÖNECEĞİM  
           
           if(isset($selected_categories) && in_array($category->term_id, $selected_categories)){
             echo $category->term_id." is here";
@@ -1285,14 +1313,10 @@ function aicommentcreator_automaticComment(){ aicommentcreator_automaticComment_
           } 
           $option = '<option value="' . $category->term_id . '">';
           $option .= $category->name;
-          //$option .=  "CATEGORİES SELECTED : " .$selected_categories;
           $option .= '</option>';
           echo $option;
       }
-      /*
-      <option value="1">Category1</option>
-      <option value="2">Category2</option> 
-      */
+     
 
       ?>
       

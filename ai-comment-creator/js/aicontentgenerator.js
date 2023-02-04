@@ -50,7 +50,7 @@ jQuery(document).ready(function($){
       //Use OpenAI API
 
       let final_prompt = prompt + ' " ' + postContent + ' " ';
-let url = 'https://aicontentgenerator.app/api/generateCommentOpenAI';
+      let url = 'https://aicontentgenerator.app/api/generateCommentOpenAI';
 
 let data = {
     aicommentcreator_apikey: domainName,
@@ -74,6 +74,7 @@ $.ajax({
   },
   error: function(error) {
     console.error('There was a problem with the fetch operation: ', error);
+    window.alert(error.responseJSON.error);
   }
 });
 
@@ -83,7 +84,36 @@ $.ajax({
   
     }else{
       //Use AIContentGenerator API
-  
+
+      let final_prompt = prompt + ' " ' + postContent + ' " ';
+      let url = 'https://www.aicontentgenerator.app/api/generateCommentJS';
+      
+      let data = {
+          userDomain: domainName,
+          maxToken: maxToken,
+          prompt: final_prompt
+      };
+      
+      $.ajax({
+        type: 'POST',
+        url: url,
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        success: function(result) {
+          let text = result.choices[0].text;
+          console.log("AICONTENTGENERATOR: " + text);
+          console.log(result);
+          // process the data here
+          
+          document.getElementById("comment_content").value = text.trim();
+          $('#loading').hide();
+        },
+        error: function(error) {
+          console.error('There was a problem with the fetch operation: ', error);
+          window.alert(error.responseJSON.error);
+        }
+      });
+  /*
      var finalPrompt = prompt  + " ' " + postContent + " ' ";
      var finalUrl = "https://www.aicontentgenerator.app/api/generateCommentJS?userDomain=" + domainName + "&maxToken=" + maxToken + "&prompt=" + finalPrompt;
      finalUrl = stripHTML(finalUrl);
@@ -110,7 +140,7 @@ $.ajax({
   });
   
   
-  
+  */
       
      
     }
