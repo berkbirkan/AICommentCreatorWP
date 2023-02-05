@@ -13,7 +13,7 @@ This documentation will guide you through the manual installation process of the
 Congratulations, you have successfully installed and activated the AI Comment Creator WordPress plugin. Now you can start using the plugin to enhance the functionality of your website by automatically creating comments.
 
 ## General Settings
-![alt text](https://github.com/berkbirkan/AICommentCreatorWP/blob/main/smmmobile1.png "General Settings)
+![alt text](https://github.com/berkbirkan/AICommentCreatorWP/blob/main/smmmobile1.png "General Settings")
 The General Settings page in the AI Comment Creator plugin allows you to manage your OpenAI API Key or AI Content Generator API system. This page includes the following sections:
 
 1. OpenAI API Key: This section allows you to enter your OpenAI API Key. If you don't want to use AIContentGenerator API, you can use OpenAI.
