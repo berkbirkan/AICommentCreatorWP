@@ -894,29 +894,10 @@ function aicommentcreator_generate_comment_with_aicontentgenerator($domain_name,
 
   $responseData = json_decode($result, true);
   $text = $responseData['choices'][0]['text'];
-  return "AICONTENTGENERATOR API   : " . $text;
+  return $text;
   
 
-/*
-$final_prompt = $prompt . ' :  " ' . $blog_post . ' " ';
 
-$final_prompt = aicommentcreator_parseHTML($final_prompt);
-
-$ch = curl_init();
-
-curl_setopt($ch, CURLOPT_URL, "https://www.aicontentgenerator.app/api/generateCommentJS");
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, "userDomain=$domain_name&maxToken=$max_token&prompt=$final_prompt");
-curl_setopt($ch, CURLOPT_POST, 1);
-
-$response = curl_exec($ch);
-if (curl_errno($ch)) {
-    return curl_error($ch);
-}
-curl_close ($ch);
-
-$result = json_decode($response, true);
-return "AICONTENTGENERATOR API : " .$response .$result["choices"][0]["text"]; */
 
 
 
@@ -957,7 +938,7 @@ function aicommentcreator_generate_comment_with_openai($aicommentcreator_apikey,
 
   $responseData = json_decode($result, true);
   $text = $responseData['choices'][0]['text'];
-  return "OPENAI  : " . $text;
+  return $text;
 
 }
 
@@ -1032,7 +1013,7 @@ function aicommentcreator_cronjob_auto_comment() {
 
   //Check if user have a enough credits in AIContentGenerator
 
-  $credit = (int) get_user_from_aicontentgenerator_api()["user_token"];
+  $credit = (int) get_user_from_aicontentgenerator_api()[0]["user_token"];
   
 	
 	//Get Options
@@ -1206,7 +1187,7 @@ $response = curl_exec($curl);
 
 $json = json_decode($response, true);
 
-return $json[0];
+return $json;
 
 }
 
@@ -1220,14 +1201,33 @@ function aicommentcreator_generalSettings(){ aicommentcreator_general_setOptions
 <!-- Form Name -->
 <legend><?php _e('General Settings', 'ai-comment-creator'); ?></legend>
 
+<?php 
+
+
+$user = get_user_from_aicontentgenerator_api();
+$isUserPremium = $user[0]['isPremium'];
+$user_maxToken = get_user_from_aicontentgenerator_api()["freeUser_token"];
+$user_credit = $user[0]['user_token'];
+
+//If user doesnt have any AIContentGenerator credit and premium membership
+if($user_credit <= 0 && $isUserPremium != '1' ){
+  
+  echo '<div class="alert alert-warning" role="alert">
+  You are not premium user and doesnt have any AIContentGenerator credit. Thats why you have ' . $user_maxToken . ' token limit. If you want unlimited token, you should buy premium or buy credit.' .
+'</div>';
+}
+
+
+?>
+
 
 <div class="form-group">
 <div class="card text-center">
     <div class="card-body">
       <h5 class="card-title"><?php _e('AI Content Generator', 'ai-comment-creator'); ?></h5>
-      <p class="card-text"> <?php _e('Credit:','ai-comment-creator'); echo get_user_from_aicontentgenerator_api()["user_token"]; ?></p>
-      <p class="card-text"> <?php _e('OpenAI Support :', 'ai-comment-creator');
-      echo get_user_from_aicontentgenerator_api()["isPremium"] ? " Yes" : " No"; ?></p>
+      <p class="card-text"> <?php _e('Credit:','ai-comment-creator'); echo $user_credit; ?></p>
+      <p class="card-text"> <?php _e('User Type  :', 'ai-comment-creator');
+      echo $isUserPremium == '1' ? " Premium" : " Free User"; ?></p>
       <a href="<?php echo admin_url('admin.php?page=aicommentcreator_buyCredit') ?>" class="btn btn-primary"><?php _e('Buy Credit', 'ai-comment-creator'); ?></a>
     </div>
   </div>
@@ -1246,7 +1246,7 @@ function aicommentcreator_generalSettings(){ aicommentcreator_general_setOptions
         echo "";
     } else {
        echo "API Key";
-     } ?>" type="text" class="form-control input-md" <?php echo get_user_from_aicontentgenerator_api()["isPremium"] ? "" : "readonly"; ?>>
+     } ?>" type="text" class="form-control input-md" >
   <span class="help-block"><?php _e('OpenAI API Key', 'ai-comment-creator'); ?></span>  
   </div>
 </div>
@@ -1280,7 +1280,26 @@ function aicommentcreator_automaticComment(){ aicommentcreator_automaticComment_
 <!-- Form Name -->
 <legend><?php _e('Automatic Comment', 'ai-comment-creator'); ?></legend>
 
+<?php
 
+$user = get_user_from_aicontentgenerator_api();
+$isUserPremium = $user[0]['isPremium'];
+$user_maxToken = get_user_from_aicontentgenerator_api()["freeUser_token"];
+$user_credit = $user[0]['user_token'];
+
+//If user doesnt have any AIContentGenerator credit and premium membership
+if($user_credit <= 0 && $isUserPremium != '1' ){
+  $tokenLimit = $user_maxToken;
+  echo '<div class="alert alert-warning" role="alert">
+  You are not premium user and doesnt have any AIContentGenerator credit. Thats why you have ' . $user_maxToken . ' token limit. If you want unlimited token, you should buy premium or buy credit.' .
+'</div>';
+}else{
+  $tokenLimit = "";
+}
+
+
+
+?>
 
 <!-- Select Multiple -->
 <div class="form-group">
@@ -1293,6 +1312,10 @@ function aicommentcreator_automaticComment(){ aicommentcreator_automaticComment_
         $selected_time_type = unserialize(get_option("aicommentcreator_autocomment_settings"))["aicommentcreator_time_type"];
         $selected_time = unserialize(get_option("aicommentcreator_autocomment_settings"))["aicommentcreator_time"];
         $selected_comment_language = unserialize(get_option("aicommentcreator_autocomment_settings"))["aicommentcreator_comment_language"];
+
+       
+       
+  
 
 
         $categories = get_categories( array(
@@ -1401,7 +1424,7 @@ function aicommentcreator_automaticComment(){ aicommentcreator_automaticComment_
 <div class="form-group">
   <label class="col-md-4 control-label" for="max_token"><?php _e('Max Token', 'ai-comment-creator'); ?></label>  
   <div class="col-md-4">
-  <input value="<?php echo unserialize(get_option("aicommentcreator_autocomment_settings"))["aicommentcreator_max_token"]  ?>" id="max_token" name="max_token" type="number" placeholder="200" class="form-control input-md" required>
+  <input value="<?php echo unserialize(get_option("aicommentcreator_autocomment_settings"))["aicommentcreator_max_token"] ?>" id="max_token" name="max_token" max="<?php echo $tokenLimit; ?>" type="number" placeholder="1000" class="form-control input-md" required>
   <span class="help-block"><?php _e('You can think of tokens as pieces of words, where 1,000 tokens is about 750 words.', 'ai-comment-creator'); ?></span>  
   </div>
 </div>
@@ -1458,15 +1481,15 @@ function aicommentcreator_automaticComment(){ aicommentcreator_automaticComment_
 
 <!-- Multiple Radios (inline) -->
 <div class="form-group">
-  <label class="col-md-4 control-label" for="select_avatar">Avatar</label>
+  <label class="col-md-4 control-label" for="select_avatar"><?php _e('Avatar', 'ai-comment-creator'); ?></label>
   <div class="col-md-4"> 
     <label class="radio-inline" for="select_avatar-0">
-      <input type="radio" name="select_avatar" id="select_avatar-0" value="1" checked="checked">
-      Yes
+      <input type="radio" name="select_avatar" id="select_avatar-0" value="1" <?php $settings = unserialize(get_option('aicommentcreator_autocomment_settings')); if($settings['select_avatar'] == '1'){ echo 'checked="checked"'; } ?>>
+      <?php _e('Yes', 'ai-comment-creator'); ?>
     </label> 
     <label class="radio-inline" for="select_avatar-1">
-      <input type="radio" name="select_avatar" id="select_avatar-1" value="2">
-      No
+      <input type="radio" name="select_avatar" id="select_avatar-1" value="2" <?php $settings = unserialize(get_option('aicommentcreator_autocomment_settings')); if($settings['select_avatar'] != '1'){ echo 'checked="checked"'; } ?>>
+      <?php _e('No', 'ai-comment-creator'); ?>
     </label>
   </div>
 </div>
@@ -1502,7 +1525,7 @@ function aicommentcreator_buyCredit()  { ?>
     <select id="select_token" name="select_token" class="form-control">
       <?php
 
-      echo '<option value="OpenAI Support/1299" name="1111">OpenAI Support - 12.99$</option> ';
+      echo '<option value="Premium Membership/1299" name="1111">Premium Membership - 12.99$</option> ';
 
       // Get Prices
   
@@ -1620,7 +1643,7 @@ function aicommentcreator_addComment(){  aicommentcreator_addComment_setOptions(
       }
 
       // Get AIContentGenerator Credit
-      $user_current_credit = (int) get_user_from_aicontentgenerator_api()["user_token"];
+      $user_current_credit = (int) get_user_from_aicontentgenerator_api()[0]["user_token"];
 
       //Create hidden input for user credit
       echo '<input type="hidden" id="user_current_credit" value="'.$user_current_credit.'" class="form-control input-md">';

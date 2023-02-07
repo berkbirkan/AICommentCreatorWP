@@ -50,6 +50,7 @@ jQuery(document).ready(function($){
       //Use OpenAI API
 
       let final_prompt = prompt + ' " ' + postContent + ' " ';
+      console.log(final_prompt);
       let url = 'https://aicontentgenerator.app/api/generateCommentOpenAI';
 
 let data = {
@@ -87,6 +88,7 @@ $.ajax({
 
       let final_prompt = prompt + ' " ' + postContent + ' " ';
       let url = 'https://www.aicontentgenerator.app/api/generateCommentJS';
+      console.log(final_prompt);
       
       let data = {
           userDomain: domainName,
@@ -113,34 +115,7 @@ $.ajax({
           window.alert(error.responseJSON.error);
         }
       });
-  /*
-     var finalPrompt = prompt  + " ' " + postContent + " ' ";
-     var finalUrl = "https://www.aicontentgenerator.app/api/generateCommentJS?userDomain=" + domainName + "&maxToken=" + maxToken + "&prompt=" + finalPrompt;
-     finalUrl = stripHTML(finalUrl);
-     console.log(finalUrl);
-  
-  
-  
-  var settings = {
-    url: finalUrl,
-    method: "POST",
-    timeout: 0,
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    dataType: 'json'
-  };
-  
-  $.ajax(settings).done(function (data) {
-    console.log(data);
-    console.log(data);
-    console.log("AICONTENTGENERATORrrr111 : " + data.choices[0].text);
-      document.getElementById("comment_content").value = data.choices[0].text.trim();
-      $('#loading').hide();
-  });
-  
-  
-  */
+ 
       
      
     }
